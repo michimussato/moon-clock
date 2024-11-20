@@ -1,10 +1,10 @@
-from moon_clock.settings import Settings
-from PIL import ImageFile, Image, ImageDraw
 import logging
+from PIL import ImageFile, Image, ImageDraw
+from moon_clock.settings import Settings
 
 
 LOG = logging.getLogger(__name__)
-LOG.setLevel(Settings.GLOBAL_LOGGING_LEVEL)
+LOG.setLevel(Settings.GLOBAL_LOGGING_LEVEL.value)
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -17,8 +17,7 @@ class Resource(object):
 
     @property
     def MOON_TEXUTRE(self):
-        #     _MOON_TEXUTRE = os.path.join(BASE_DIR, 'player', 'static', 'moon_texture_small.png')
-        return Image.open(r'/home/michael/git/repos/moon-clock/moon-clock/src/moon_clock/moon_texture_small.png')
+        return Image.open(Settings.MOON_TEXTURE.value)
 
     @property
     def MOON_TEXTURE_SQUARE(self):

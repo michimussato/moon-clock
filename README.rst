@@ -23,21 +23,27 @@
         :alt: Twitter
         :target: https://twitter.com/moon-clock
 
-.. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
-    :alt: Project generated with PyScaffold
-    :target: https://pyscaffold.org/
 
-|
+    .. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
+        :alt: Project generated with PyScaffold
+        :target: https://pyscaffold.org/
+
+
+.. image:: docs/media/moon_clock_2024-11-20.png
+    :alt: Moon Afternoon
+    :scale: 50 %
 
 ==========
 moon-clock
 ==========
 
 
-    Add a short description here!
+    A 24h clock that shows sun and moon phases
 
 
-A longer description of your project goes here...
+The package was originally developed to display the time on
+a color e-ink screen, such as the `Pimoroni Inky Impression
+<https://shop.pimoroni.com/search?q=impression>`_.
 
 
 Installation
@@ -46,6 +52,16 @@ Installation
 .. code-block:: console
 
    pip install moon-clock
+
+
+.. note::
+   This package has not yet been released to Pypi.org, hence,
+   install from GitHub directly:
+
+
+.. code-block:: console
+
+   pip install git+https://github.com/michimussato/moon-clock.git
 
 
 Usage
@@ -62,12 +78,12 @@ Examples
 ========
 
 Shortly before 11 PM, with the moon at it's highest:
- .. image:: docs/media/clock.png
-     :alt: Moon Night
+    .. image:: docs/media/clock.png
+        :alt: Moon Night
 
 About 4:15 PM, shortly before sunset:
- .. image:: docs/media/moon_clock.png
-     :alt: Moon Afternoon
+    .. image:: docs/media/moon_clock.png
+        :alt: Moon Afternoon
 
 
 .. _pyscaffold-notes:

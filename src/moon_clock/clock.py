@@ -3,15 +3,15 @@ import logging
 import math
 import numpy as np
 
-import moon_clock.suncalc as suncalc
-from moon_clock.images import Resource
-
 from PIL import ImageFile, Image, ImageDraw, ImageFont, ImageOps, ImageChops, ImageEnhance, ImageFilter
+from suncalcPy import suncalc
+
+from moon_clock.images import Resource
 from moon_clock.settings import Settings
 
 
 LOG = logging.getLogger(__name__)
-LOG.setLevel(Settings.GLOBAL_LOGGING_LEVEL)
+LOG.setLevel(Settings.GLOBAL_LOGGING_LEVEL.value)
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -19,22 +19,6 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 LOG.info('Setting timezone manually')
 # tz = Settings.TZ
-
-
-# CLOCK
-HOURS_ = [12, 24]
-HOURS = HOURS_[1]
-
-
-# MOON TEXTURE
-CONTRAST = 1
-BRIGHTNESS = 1.2
-
-
-# TEXT
-DEFAULT_TEXT = 'MoonClock'
-DATE_FORMAT = ['%-d.%-m.%Y'][0]
-DEFAULT_RESOLUTION = 448
 
 
 class MoonClockException(Exception):
@@ -45,10 +29,10 @@ class MoonClock(object):
 
     @staticmethod
     def get_clock(
-            draw_text: str = DEFAULT_TEXT,
+            draw_text: str = Settings.DEFAULT_TEXT.value,
             draw_date: bool = True,
-            size: int = DEFAULT_RESOLUTION,
-            hours: int = HOURS,
+            size: int = Settings.DEFAULT_RESOLUTION.value,
+            hours: int = Settings.HOURS.value,
             draw_sun: bool = True,
             draw_moon: bool = True,
             draw_moon_tex: bool = True,
@@ -58,9 +42,9 @@ class MoonClock(object):
             mask_square: bool = False,
     ) -> Image:
 
-        _size = size * Settings.ANTIALIAS
+        _size = size * Settings.ANTIALIAS.value
 
-        if hours not in HOURS_:
+        if hours not in Settings.HOURS_.value:
             raise MoonClockException('hours can only be 12 or 24')
 
         bg = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
@@ -74,10 +58,26 @@ class MoonClock(object):
         # imperfect moon texture
         # rect:
         if mask_square:
-            draw_bg.rectangle((0+edge_compensation, 0+edge_compensation, _size-edge_compensation-_edge_comp_2, _size-edge_compensation-_edge_comp_2), fill=(0, 0, 0, 255))
+            draw_bg.rectangle(
+                (
+                    0+edge_compensation,
+                    0+edge_compensation,
+                    _size-edge_compensation-_edge_comp_2,
+                    _size-edge_compensation-_edge_comp_2
+                ),
+                fill=(0, 0, 0, 255)
+            )
         # circle:
         if mask_moon_shadow:
-            draw_bg.ellipse((0+edge_compensation, 0+edge_compensation, _size-edge_compensation-_edge_comp_2, _size-edge_compensation-_edge_comp_2), fill=(0, 0, 0, 255))
+            draw_bg.ellipse(
+                (
+                    0+edge_compensation,
+                    0+edge_compensation,
+                    _size-edge_compensation-_edge_comp_2,
+                    _size-edge_compensation-_edge_comp_2
+                ),
+                fill=(0, 0, 0, 255)
+            )
 
         _clock = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
 
@@ -91,7 +91,21 @@ class MoonClock(object):
         white = (255, 255, 255, 255)
 
         # center dot
-        draw.ellipse([(round(_size * 0.482), round(_size * 0.482)), (round(_size - _size * 0.482), round(_size - _size * 0.482))], fill=white, outline=None, width=round(_size * 0.312))
+        draw.ellipse(
+            [
+                (
+                    round(_size * 0.482),
+                    round(_size * 0.482)
+                ),
+                (
+                    round(_size - _size * 0.482),
+                    round(_size - _size * 0.482)
+                )
+            ],
+            fill=white,
+            outline=None,
+            width=round(_size * 0.312)
+        )
 
         color = white
         if hours == 24:
@@ -155,25 +169,62 @@ class MoonClock(object):
                          ]
 
         for start, end in intervals[::-1]:  # reversed
-            draw.arc([(round(_size * 0.022), round(_size * 0.022)), (round(_size - _size * 0.022), round(_size - _size * 0.022))], start=start, end=end, fill=color, width=round(_size * 0.060))
+            draw.arc(
+                [
+                    (
+                        round(_size * 0.022),
+                        round(_size * 0.022)
+                    ),
+                    (
+                        round(_size - _size * 0.022),
+                        round(_size - _size * 0.022)
+                    )
+                ],
+                start=start,
+                end=end,
+                fill=color,
+                width=round(_size * 0.060)
+            )
 
         decimal_h = float(datetime.datetime.now().strftime('%H')) + float(datetime.datetime.now().strftime('%M')) / 60
         arc_length_h = decimal_h / hours * 360.0
 
         # indicator
         color = white
-        size_h = [(round(_size * 0.112), round(_size * 0.112)), (round(_size - _size * 0.112), round(_size - _size * 0.112))]
+        size_h = [
+            (
+                round(_size * 0.112),
+                round(_size * 0.112)
+            ),
+            (
+                round(_size - _size * 0.112),
+                round(_size - _size * 0.112)
+            )
+        ]
         width = round(_size * 0.134)
         indicator_thickness = 6
-        draw.arc(size_h, start=(arc_twelve + arc_length_h - indicator_thickness/2), end=(arc_twelve + arc_length_h + indicator_thickness/2), fill=color,
-                 width=width)
+        draw.arc(
+            size_h,
+            start=(arc_twelve + arc_length_h - indicator_thickness/2),
+            end=(arc_twelve + arc_length_h + indicator_thickness/2),
+            fill=color,
+            width=width
+        )
 
         if draw_text:
             logo_img = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
             logo_draw = ImageDraw.Draw(logo_img)
-            font_logo = ImageFont.truetype(Settings.CALLIGRAPHIC, round(_size * 0.140))
+            font_logo = ImageFont.truetype(Settings.CALLIGRAPHIC.value, round(_size * 0.140))
             length_logo = font_logo.getlength(draw_text)
-            logo_draw.text((round(_size / 2) - length_logo / 2, round(_size * 0.536)), draw_text, fill=white, font=font_logo)
+            logo_draw.text(
+                (
+                    round(_size / 2) - length_logo / 2,
+                    round(_size * 0.536)
+                ),
+                draw_text,
+                fill=white,
+                font=font_logo
+            )
 
             _logo_inv = ImageOps.invert(_clock.convert('RGB'))
             _clock.paste(_logo_inv, mask=logo_img)
@@ -181,13 +232,21 @@ class MoonClock(object):
         if draw_date:
             date_img = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
             date_draw = ImageDraw.Draw(date_img)
-            font_date = ImageFont.truetype(Settings.CALLIGRAPHIC, round(_size * 0.120))
+            font_date = ImageFont.truetype(Settings.CALLIGRAPHIC.value, round(_size * 0.120))
             # font_date = ImageFont.truetype(ARIAL, round(_size * 0.035))
             # text_date = datetime.datetime.now().strftime('%A, %B %d %Y')
             # text_date = datetime.datetime.now().strftime('%x')
-            text_date = datetime.datetime.now().strftime(DATE_FORMAT)
+            text_date = datetime.datetime.now().strftime(Settings.DATE_FORMAT.value)
             length_date = font_date.getlength(text_date)
-            date_draw.text((round(_size / 2) - length_date / 2, round(_size * 0.315)), text_date, fill=white, font=font_date)
+            date_draw.text(
+                (
+                    round(_size / 2) - length_date / 2,
+                    round(_size * 0.315)
+                ),
+                text_date,
+                fill=white,
+                font=font_date
+            )
 
             _date_inv = ImageOps.invert(_clock.convert('RGB'))
             _clock.paste(_date_inv, mask=date_img)
@@ -200,7 +259,13 @@ class MoonClock(object):
             _draw_moon_image = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
             _draw_moon = ImageDraw.Draw(_draw_moon_image)
             _draw_moon.ellipse(((edge_compensation-1, edge_compensation), (_size-edge_compensation-_edge_comp_2, _size-edge_compensation-_edge_comp_2+1)), fill=white)
-            phase = round(float(suncalc.getMoonIllumination(datetime.datetime.now())['phase']) * 2, 4)
+            phase = round(
+                float(
+                    suncalc.getMoonIllumination(
+                        datetime.datetime.now()
+                    )['phase']) * 2,
+                4
+            )
             LOG.info(f'Moon phase: {phase} / 4')
 
             spherical = math.cos(phase * math.pi)
@@ -208,26 +273,55 @@ class MoonClock(object):
             center = _size / 2
 
             if 0.0 <= phase <= 0.5:  # new to half moon
-                _draw_moon.rectangle((0, 0, _size / 2, _size), fill=(0, 0, 0, 0))
-                _draw_moon.ellipse((center - (spherical * center) + edge_compensation, 0 + edge_compensation, center + (spherical * center) - edge_compensation, _size - edge_compensation),
-                                   fill=(0, 0, 0, 0))
+                _draw_moon.rectangle(
+                    (0, 0, _size / 2, _size),
+                    fill=(0, 0, 0, 0)
+                )
+                _draw_moon.ellipse(
+                    (
+                        center - (spherical * center) + edge_compensation,
+                        0 + edge_compensation,
+                        center + (spherical * center) - edge_compensation,
+                        _size - edge_compensation
+                    ),
+                    fill=(0, 0, 0, 0)
+                )
 
             elif 0.5 <= phase <= 1.0:  # half to full moon
-                _draw_moon.rectangle((0, 0, _size / 2, _size), fill=(0, 0, 0, 0))
-                _draw_moon.ellipse((center + (spherical * center) + edge_compensation, 0 + edge_compensation, center - (spherical * center) - edge_compensation -_edge_comp_2, _size - edge_compensation - _edge_comp_2),
-                                   fill=white)
+                _draw_moon.rectangle(
+                    (0, 0, _size / 2, _size),
+                    fill=(0, 0, 0, 0)
+                )
+                _draw_moon.ellipse(
+                    (
+                        center + (spherical * center) + edge_compensation,
+                        0 + edge_compensation,
+                        center - (spherical * center) - edge_compensation -_edge_comp_2,
+                        _size - edge_compensation - _edge_comp_2
+                    ),
+                    fill=white
+                )
 
                 # TODO:
                 # Blur is not precise yet
                 if blur:
                     blur_weight = 5
                     for i in range(75):
-                        kernel = np.array([[0, 0, 0, 0, 0],
-                                           [0, 0, 0, 0, 0],
-                                           [blur_weight, blur_weight, blur_weight, blur_weight, blur_weight],
-                                           [0, 0, 0, 0, 0],
-                                           [0, 0, 0, 0, 0]])
-                        _draw_moon_image = _draw_moon_image.filter(ImageFilter.Kernel(size=(5, 5), kernel=kernel.flatten()))
+                        kernel = np.array(
+                            [
+                                [0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0],
+                                [blur_weight, blur_weight, blur_weight, blur_weight, blur_weight],
+                                [0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0]
+                            ]
+                        )
+                        _draw_moon_image = _draw_moon_image.filter(
+                            ImageFilter.Kernel(
+                                size=(5, 5),
+                                kernel=kernel.flatten()
+                            )
+                        )
                         # _temp = _temp.crop((_size/4, 0, _size/4*3, _size))
                         # _temp = _temp.resize((_size, _size))
                         # _draw_moon_image = _draw_mo.paste(_temp)
@@ -235,14 +329,34 @@ class MoonClock(object):
                         # _draw_moon.rectangle((_size / 2, 0, _size, _size), fill=(0, 0, 0, 0))
 
             elif 1.0 < phase <= 1.5:  # full to half moon
-                _draw_moon.rectangle((_size / 2, 0, _size, _size), fill=(0, 0, 0, 0))
-                _draw_moon.ellipse((center + (spherical * center) + edge_compensation, 0 + edge_compensation, center - (spherical * center) - edge_compensation-_edge_comp_2, _size - edge_compensation-_edge_comp_2),
-                                   fill=white)
+                _draw_moon.rectangle(
+                    (_size / 2, 0, _size, _size),
+                    fill=(0, 0, 0, 0)
+                )
+                _draw_moon.ellipse(
+                    (
+                        center + (spherical * center) + edge_compensation,
+                        0 + edge_compensation,
+                        center - (spherical * center) - edge_compensation-_edge_comp_2,
+                        _size - edge_compensation-_edge_comp_2
+                    ),
+                    fill=white
+                )
 
             elif 1.5 < phase <= 2.0:  # half to new moon
-                _draw_moon.rectangle((_size / 2, 0, _size, _size), fill=(0, 0, 0, 0))
-                _draw_moon.ellipse((center - (spherical * center) + edge_compensation, 0 + edge_compensation, center + (spherical * center) - edge_compensation, _size - edge_compensation),
-                                   fill=(0, 0, 0, 0))
+                _draw_moon.rectangle(
+                    (_size / 2, 0, _size, _size),
+                    fill=(0, 0, 0, 0)
+                )
+                _draw_moon.ellipse(
+                    (
+                        center - (spherical * center) + edge_compensation,
+                        0 + edge_compensation,
+                        center + (spherical * center) - edge_compensation,
+                        _size - edge_compensation
+                    ),
+                    fill=(0, 0, 0, 0)
+                )
 
             _comp_inv = ImageOps.invert(comp.convert('RGB'))
 
@@ -250,10 +364,10 @@ class MoonClock(object):
                 moon_tex = Resource().MOON_TEXTURE_SQUARE.resize((_size, _size))
 
                 filter_contrast = ImageEnhance.Contrast(moon_tex)
-                moon_tex = filter_contrast.enhance(CONTRAST)
+                moon_tex = filter_contrast.enhance(Settings.CONTRAST.value)
 
                 filter_bright = ImageEnhance.Brightness(moon_tex)
-                moon_tex = filter_bright.enhance(BRIGHTNESS)
+                moon_tex = filter_bright.enhance(Settings.BRIGHTNESS.value)
 
                 moon_tex.paste(moon_tex, mask=_draw_moon_image)
                 moon_tex = ImageChops.multiply(moon_tex, _comp_inv.convert('RGBA'))
@@ -265,7 +379,7 @@ class MoonClock(object):
 
         if draw_sun:
             _draw_sun = ImageDraw.Draw(comp)
-            _sun = suncalc.getTimes(datetime.datetime.now(), Settings.LAT, Settings.LONG)
+            _sun = suncalc.getTimes(datetime.datetime.now(), Settings.LAT.value, Settings.LONG.value)
 
             decimal_sunrise = float(_sun['sunrise'].strftime('%H')) + float(_sun['sunrise'].strftime('%M')) / 60
             arc_length_sunrise = decimal_sunrise / hours * 360.0
@@ -278,19 +392,45 @@ class MoonClock(object):
             color = (255, 128, 0, 255)
             _size_astral = 0.17  # TODO: bigger means smaller circle
             _width = 0.012
-            size_astral = [(round(_size * _size_astral), round(_size * _size_astral)), (round(_size - _size * _size_astral), round(_size - _size * _size_astral))]
+            size_astral = [
+                (
+                    round(_size * _size_astral),
+                    round(_size * _size_astral)
+                ),
+                (
+                    round(_size - _size * _size_astral),
+                    round(_size - _size * _size_astral)
+                )
+            ]
             width_astral = round(_size * _width)
-            _draw_sun.arc(size_astral, start=arc_length_sunrise+arc_twelve, end=arc_length_sunset+arc_twelve, fill=color,
-                          width=width_astral)
+            _draw_sun.arc(
+                size_astral,
+                start=arc_length_sunrise+arc_twelve,
+                end=arc_length_sunset+arc_twelve,
+                fill=color,
+                width=width_astral
+            )
 
         # moon
         if draw_moon:
             _draw_moon = ImageDraw.Draw(comp)
             now = datetime.datetime.today()
 
-            _moon_yesterday = suncalc.getMoonTimes(now - datetime.timedelta(hours=24), Settings.LAT, Settings.LONG)
-            _moon_today = suncalc.getMoonTimes(now, Settings.LAT, Settings.LONG)
-            _moon_tomorrow = suncalc.getMoonTimes(now + datetime.timedelta(hours=24), Settings.LAT, Settings.LONG)
+            _moon_yesterday = suncalc.getMoonTimes(
+                now - datetime.timedelta(hours=24),
+                Settings.LAT.value,
+                Settings.LONG.value
+            )
+            _moon_today = suncalc.getMoonTimes(
+                now,
+                Settings.LAT.value,
+                Settings.LONG.value
+            )
+            _moon_tomorrow = suncalc.getMoonTimes(
+                now + datetime.timedelta(hours=24),
+                Settings.LAT.value,
+                Settings.LONG.value
+            )
 
             LOG.debug(f'Moon Yesterday: {_moon_yesterday}')
             LOG.debug(f'Moon Today: {_moon_today}')
@@ -347,10 +487,24 @@ class MoonClock(object):
                 color = (0, 128, 255, 255)
                 _size_astral = 0.20  # TODO: bigger means smaller circle
                 _width = 0.012
-                size_astral = [(round(_size * _size_astral), round(_size * _size_astral)), (round(_size - _size * _size_astral), round(_size - _size * _size_astral))]
+                size_astral = [
+                    (
+                        round(_size * _size_astral),
+                        round(_size * _size_astral)
+                    ),
+                    (
+                        round(_size - _size * _size_astral),
+                        round(_size - _size * _size_astral)
+                    )
+                ]
                 width_astral = round(_size * _width)
-                _draw_moon.arc(size_astral, start=arc_length_moonrise+arc_twelve, end=arc_length_moonset+arc_twelve, fill=color,
-                               width=width_astral)
+                _draw_moon.arc(
+                    size_astral,
+                    start=arc_length_moonrise+arc_twelve,
+                    end=arc_length_moonset+arc_twelve,
+                    fill=color,
+                    width=width_astral
+                )
 
             except UnboundLocalError:
                 LOG.exception('No Moon Rise found that happens before Moon Set:')
@@ -362,6 +516,12 @@ class MoonClock(object):
         # 270: reverse portrait (270 CCW)
         # comp = comp.rotate(0, expand=False)
 
-        comp = comp.resize((round(_size/Settings.ANTIALIAS), round(_size/Settings.ANTIALIAS)), Image.Resampling.LANCZOS)
+        comp = comp.resize(
+            (
+                round(_size/Settings.ANTIALIAS.value),
+                round(_size/Settings.ANTIALIAS.value),
+            ),
+            Image.Resampling.LANCZOS
+        )
 
         return comp
