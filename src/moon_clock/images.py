@@ -12,7 +12,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Resource(object):
     """
-    from player.jukeoroni.images import Resource
+    from moon_clock.images import Resource
     """
 
     @property
