@@ -27,7 +27,7 @@ class Settings(enum.Enum):
     DRAW_MOON = True
     DRAW_MOON_TEXT = True
     DRAW_MOON_PHASE = True
-    MASK_MOON_SHADOW = False
+    MASK_MOON_SHADOW = True
 
     HOURS_ = [12, 24]
     HOURS = HOURS_[1]
