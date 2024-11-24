@@ -10,7 +10,9 @@
 
 # moon-clock
 
-A 24h clock that shows sun and moon phases
+A 24h clock that shows sun and moon phases.
+
+[<img src="docs/media/moon_clock_2024-11-20.png" width="200"/>](docs/media/moon_clock_2024-11-20.png)
 
 The package was originally developed as a sub-package for
 [JukeOroni](https://github.com/michimussato/jukeoroni) 
