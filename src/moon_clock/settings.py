@@ -22,12 +22,12 @@ class Settings(enum.Enum):
     MOON_TEXTURE = pathlib.Path(RESOURCES / "img" / "moon_texture_small.png")
     DRAW_TZ = True
     DRAW_DATE = True
-    BLUR = True
+    BLUR = False  # Todo: blur is not precise yet
     DRAW_SUN = True
     DRAW_MOON = True
     DRAW_MOON_TEXT = True
     DRAW_MOON_PHASE = True
-    MASK_MOON_SHADOW = False  # Todo: blur is not precise yet
+    MASK_MOON_SHADOW = False
 
     HOURS_ = [12, 24]
     HOURS = HOURS_[1]
