@@ -609,19 +609,7 @@ def parse_args(args):
         const=logging.DEBUG,
     )
 
-    # group = parser.add_mutually_exclusive_group(required=True)
-    #
-    # list_group = group.ad
-
     group_save = parser.add_argument_group("save")
-
-    group_query = parser.add_argument_group("query")
-
-
-
-    # group = parser.add_mutually_exclusive_group(
-    #     required=True
-    # )
 
     group_save.add_argument(
         "-a",
@@ -631,15 +619,6 @@ def parse_args(args):
         type=str,
         required=False,
     )
-
-    # group_save.add_argument(
-    #     "-tz",
-    #     "--time-zone",
-    #     dest="time_zone",
-    #     help="Set time zone",
-    #     type=str,
-    #     required=False,
-    # )
 
     group_save.add_argument(
         "-f",
@@ -660,14 +639,6 @@ def parse_args(args):
         required=False,
     )
 
-    # group_query.add_argument(
-    #     "-l",
-    #     "--list-time-zone",
-    #     dest="list_time_zone",
-    #     help="List time zones",
-    #     action="store_true",
-    # )
-
     return parser.parse_args(args)
 
 
@@ -684,15 +655,8 @@ def setup_logging(loglevel):
 
 
 def main(args):
-    # print(args)
     args = parse_args(args)
     setup_logging(args.loglevel)
-    # print(args)
-
-    # if args.list_time_zone:
-    #     from pprint import pprint
-    #     pprint(zoneinfo.available_timezones())
-    #     sys.exit(0)
 
     if args.out_file.resolve().parent.exists():
         moon_clock.MoonClock().get_clock(address=args.address, iso=args.iso).save(args.out_file)
