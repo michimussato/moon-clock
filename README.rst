@@ -74,6 +74,16 @@ Usage
    clock.save(r'moon_clock.png')
 
 
+.. code-block:: shell
+
+   for d in $(seq -f "%02g" 1 31); do
+       for h in $(seq -f "%02g" 0 23); do
+           moon-clock -v -a "Sydney" -f
+ test_${d}_${h}.png -i "2019-01-${d}T${h}:00:00+02:00";
+       done;
+   done
+
+
 Examples
 ========
 

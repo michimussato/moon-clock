@@ -1,7 +1,43 @@
 [build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
 requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
 build-backend = "setuptools.build_meta"
+
+[project]
+authors = [
+    {name = "Michael Mussato", email = "michimussato@gmail.com"},
+]
+maintainers = [
+    {name = "Michael Mussato", email = "michimussato@gmail.com"},
+]
+description = "Create/Extract encrypted zip"
+readme = "README.rst"
+name = "moon-clock"
+dynamic = ["version"]
+requires-python = ">= 3.9"
+dependencies = [
+    "numpy",
+    "pillow",
+    "geopy",
+    "timezonefinder",
+    "suncalcPy @ git+https://github.com/michimussato/suncalcPy.git"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Repository = "https://github.com/michimussato/moon-clock.git"
+
+[project.scripts]
+moon-clock = "moon_clock.clock:run"
+
+[tool.setuptools]
+# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+platforms = ["Linux", "Windows"]
+include-package-data = true
+zip-safe = false  # This just means it's safe to zip up the bdist
 
 [tool.setuptools_scm]
 # For smarter version schemes and other configuration options,

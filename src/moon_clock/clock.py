@@ -1,26 +1,37 @@
+import pathlib
+import sys
+import argparse
 import datetime
+import zoneinfo
 import logging
 import math
 import numpy as np
 
 from geopy.geocoders import Nominatim
+from timezonefinder import TimezoneFinder
 
 from PIL import ImageFile, Image, ImageDraw, ImageFont, ImageOps, ImageChops, ImageEnhance, ImageFilter
 from suncalcPy import suncalc
 
+import moon_clock
 from moon_clock.images import Resource
 from moon_clock.settings import Settings
 
+__author__ = "Michael Mussato"
+__copyright__ = "Michael Mussato"
+__license__ = "MIT"
 
 LOG = logging.getLogger(__name__)
-LOG.setLevel(Settings.GLOBAL_LOGGING_LEVEL.value)
+
+
+LOG = logging.getLogger(__name__)
+# LOG.setLevel(Settings.GLOBAL_LOGGING_LEVEL.value)
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-LOG.info('Setting timezone manually')
-# tz = Settings.TZ
+# ---- Python API ----
 
 
 class MoonClockException(Exception):
@@ -30,15 +41,17 @@ class MoonClockException(Exception):
 class MoonClock(object):
 
     @staticmethod
-    def get_coords(address) -> tuple[float, float]:
+    def _get_coords(address) -> tuple[float, float]:
         geolocator = Nominatim(user_agent="moon-clock")
         location = geolocator.geocode(address)
-        print(location.address)
+        LOG.info(f"Writing Clock PNG for location: {location.address}")
         return location.latitude, location.longitude
 
 
     @staticmethod
     def get_clock(
+            address: str,
+            iso: None,
             draw_text: str = Settings.DEFAULT_TEXT.value,
             draw_date: bool = True,
             size: int = Settings.DEFAULT_RESOLUTION.value,
@@ -52,7 +65,17 @@ class MoonClock(object):
             mask_square: bool = False,
     ) -> Image:
 
-        LAT, LONG = MoonClock.get_coords(address=Settings.ADDRESS.value)
+        LAT, LONG = MoonClock._get_coords(address=address)
+
+        tz = TimezoneFinder().timezone_at(lng=LONG, lat=LAT)
+        LOG.info(f"Timezone: {tz}")
+
+        if iso is None:
+            now = datetime.datetime.now(tz=zoneinfo.ZoneInfo(key=tz))
+        else:
+            now = datetime.datetime.fromisoformat(iso)
+
+        print(now)
 
         _size = size * Settings.ANTIALIAS.value
 
@@ -72,10 +95,10 @@ class MoonClock(object):
         if mask_square:
             draw_bg.rectangle(
                 (
-                    0+edge_compensation,
-                    0+edge_compensation,
-                    _size-edge_compensation-_edge_comp_2,
-                    _size-edge_compensation-_edge_comp_2
+                    edge_compensation,
+                    edge_compensation,
+                    _size-edge_compensation - _edge_comp_2,
+                    _size-edge_compensation - _edge_comp_2
                 ),
                 fill=(0, 0, 0, 255)
             )
@@ -83,10 +106,10 @@ class MoonClock(object):
         if mask_moon_shadow:
             draw_bg.ellipse(
                 (
-                    0+edge_compensation,
-                    0+edge_compensation,
-                    _size-edge_compensation-_edge_comp_2,
-                    _size-edge_compensation-_edge_comp_2
+                    edge_compensation,
+                    edge_compensation,
+                    _size-edge_compensation - _edge_comp_2,
+                    _size-edge_compensation - _edge_comp_2
                 ),
                 fill=(0, 0, 0, 255)
             )
@@ -198,7 +221,7 @@ class MoonClock(object):
                 width=round(_size * 0.060)
             )
 
-        decimal_h = float(datetime.datetime.now().strftime('%H')) + float(datetime.datetime.now().strftime('%M')) / 60
+        decimal_h = float(now.strftime('%H')) + float(now.strftime('%M')) / 60
         arc_length_h = decimal_h / hours * 360.0
 
         # indicator
@@ -248,7 +271,7 @@ class MoonClock(object):
             # font_date = ImageFont.truetype(ARIAL, round(_size * 0.035))
             # text_date = datetime.datetime.now().strftime('%A, %B %d %Y')
             # text_date = datetime.datetime.now().strftime('%x')
-            text_date = datetime.datetime.now().strftime(Settings.DATE_FORMAT.value)
+            text_date = now.strftime(Settings.DATE_FORMAT.value)
             length_date = font_date.getlength(text_date)
             date_draw.text(
                 (
@@ -274,7 +297,7 @@ class MoonClock(object):
             phase = round(
                 float(
                     suncalc.getMoonIllumination(
-                        datetime.datetime.now()
+                        now
                     )['phase']) * 2,
                 4
             )
@@ -391,7 +414,7 @@ class MoonClock(object):
 
         if draw_sun:
             _draw_sun = ImageDraw.Draw(comp)
-            _sun = suncalc.getTimes(datetime.datetime.now(), LAT, LONG)
+            _sun = suncalc.getTimes(now, LAT, LONG)
 
             decimal_sunrise = float(_sun['sunrise'].strftime('%H')) + float(_sun['sunrise'].strftime('%M')) / 60
             arc_length_sunrise = decimal_sunrise / hours * 360.0
@@ -537,3 +560,132 @@ class MoonClock(object):
         )
 
         return comp
+
+
+# ---- CLI ----
+
+
+def parse_args(args):
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        dest="loglevel",
+        help="set loglevel to INFO",
+        action="store_const",
+        const=logging.INFO,
+    )
+    parser.add_argument(
+        "-vv",
+        "--very-verbose",
+        dest="loglevel",
+        help="set loglevel to DEBUG",
+        action="store_const",
+        const=logging.DEBUG,
+    )
+
+    # group = parser.add_mutually_exclusive_group(required=True)
+    #
+    # list_group = group.ad
+
+    group_save = parser.add_argument_group("save")
+
+    group_query = parser.add_argument_group("query")
+
+
+
+    # group = parser.add_mutually_exclusive_group(
+    #     required=True
+    # )
+
+    group_save.add_argument(
+        "-a",
+        "--address",
+        dest="address",
+        help="Set Address",
+        type=str,
+        required=False,
+    )
+
+    # group_save.add_argument(
+    #     "-tz",
+    #     "--time-zone",
+    #     dest="time_zone",
+    #     help="Set time zone",
+    #     type=str,
+    #     required=False,
+    # )
+
+    group_save.add_argument(
+        "-f",
+        "--out-file",
+        dest="out_file",
+        help="Where to save the PNG to.",
+        type=pathlib.Path,
+        required=False,
+    )
+
+    group_save.add_argument(
+        "-i",
+        "--iso",
+        dest="iso",
+        help="ISO timestamp like '2019-01-04T16:41:24+02:00'",
+        default=None,
+        type=str,
+        required=False,
+    )
+
+    # group_query.add_argument(
+    #     "-l",
+    #     "--list-time-zone",
+    #     dest="list_time_zone",
+    #     help="List time zones",
+    #     action="store_true",
+    # )
+
+    return parser.parse_args(args)
+
+
+def setup_logging(loglevel):
+    """Setup basic logging
+
+    Args:
+      loglevel (int): minimum loglevel for emitting messages
+    """
+    logformat = "[%(asctime)s] %(levelname)s:%(name)s:%(message)s"
+    logging.basicConfig(
+        level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
+    )
+
+
+def main(args):
+    # print(args)
+    args = parse_args(args)
+    setup_logging(args.loglevel)
+    # print(args)
+
+    # if args.list_time_zone:
+    #     from pprint import pprint
+    #     pprint(zoneinfo.available_timezones())
+    #     sys.exit(0)
+
+    if args.out_file.resolve().parent.exists():
+        moon_clock.MoonClock().get_clock(address=args.address, iso=args.iso).save(args.out_file)
+
+    else:
+        LOG.error(f"Destination directory does not exist: {args.out_file.parent.as_posix()}")
+        sys.exit(1)
+
+    sys.exit(0)
+
+
+def run():
+    main(sys.argv[1:])
+
+
+if __name__ == "__main__":
+    run()
+
+

@@ -15,12 +15,6 @@ class Settings(enum.Enum):
     BUTTONS = [5, 6, 16, 24]
 
     # CLOCK
-    # LAT, LONG = 47.39134, 8.85971
-    # Todo:
-    #  - [ ] Calculate automatically
-    # https://www.google.com/maps/@-33.8967534,151.1985883,16335m/data=!3m1!1e3?entry=ttu&g_ep=EgoyMDI0MTExOS4yIKXMDSoJLDEwMjExMjMzSAFQAw%3D%3D
-    ADDRESS = "Sydney"
-    # LAT, LONG = -33.8930459, 151.20688
     ANTIALIAS = 4  # Warning: expensive calculation
     ARIAL = pathlib.Path(RESOURCES / "ttf" / "arial.ttf")
     CALLIGRAPHIC = pathlib.Path(RESOURCES / "ttf" / "calligraphia-one.ttf")
