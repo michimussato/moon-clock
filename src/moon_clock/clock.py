@@ -3,6 +3,8 @@ import logging
 import math
 import numpy as np
 
+from geopy.geocoders import Nominatim
+
 from PIL import ImageFile, Image, ImageDraw, ImageFont, ImageOps, ImageChops, ImageEnhance, ImageFilter
 from suncalcPy import suncalc
 
@@ -28,6 +30,14 @@ class MoonClockException(Exception):
 class MoonClock(object):
 
     @staticmethod
+    def get_coords(address) -> tuple[float, float]:
+        geolocator = Nominatim(user_agent="moon-clock")
+        location = geolocator.geocode(address)
+        print(location.address)
+        return location.latitude, location.longitude
+
+
+    @staticmethod
     def get_clock(
             draw_text: str = Settings.DEFAULT_TEXT.value,
             draw_date: bool = True,
@@ -41,6 +51,8 @@ class MoonClock(object):
             mask_moon_shadow: bool = True,
             mask_square: bool = False,
     ) -> Image:
+
+        LAT, LONG = MoonClock.get_coords(address=Settings.ADDRESS.value)
 
         _size = size * Settings.ANTIALIAS.value
 
@@ -379,7 +391,7 @@ class MoonClock(object):
 
         if draw_sun:
             _draw_sun = ImageDraw.Draw(comp)
-            _sun = suncalc.getTimes(datetime.datetime.now(), Settings.LAT.value, Settings.LONG.value)
+            _sun = suncalc.getTimes(datetime.datetime.now(), LAT, LONG)
 
             decimal_sunrise = float(_sun['sunrise'].strftime('%H')) + float(_sun['sunrise'].strftime('%M')) / 60
             arc_length_sunrise = decimal_sunrise / hours * 360.0
@@ -418,18 +430,18 @@ class MoonClock(object):
 
             _moon_yesterday = suncalc.getMoonTimes(
                 now - datetime.timedelta(hours=24),
-                Settings.LAT.value,
-                Settings.LONG.value
+                LAT,
+                LONG
             )
             _moon_today = suncalc.getMoonTimes(
                 now,
-                Settings.LAT.value,
-                Settings.LONG.value
+                LAT,
+                LONG
             )
             _moon_tomorrow = suncalc.getMoonTimes(
                 now + datetime.timedelta(hours=24),
-                Settings.LAT.value,
-                Settings.LONG.value
+                LAT,
+                LONG
             )
 
             LOG.debug(f'Moon Yesterday: {_moon_yesterday}')
