@@ -10,7 +10,7 @@ maintainers = [
     {name = "Michael Mussato", email = "michimussato@gmail.com"},
 ]
 description = "Create/Extract encrypted zip"
-readme = "README.rst"
+readme = "README.md"
 name = "moon-clock"
 dynamic = ["version"]
 requires-python = ">= 3.9"
