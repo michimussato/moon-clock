@@ -26,10 +26,6 @@ __license__ = "MIT"
 LOG = logging.getLogger(__name__)
 
 
-LOG = logging.getLogger(__name__)
-# LOG.setLevel(Settings.GLOBAL_LOGGING_LEVEL.value)
-
-
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
@@ -60,22 +56,21 @@ class MoonClock(object):
         LOG.info(f"Writing Clock PNG for location: {location.address}")
         return location.latitude, location.longitude
 
-
     @staticmethod
     def get_clock(
             address: str,
-            iso: None,
+            iso: [None, str],
             draw_text: str = Settings.DEFAULT_TEXT.value,
             draw_tz: bool = Settings.DRAW_TZ.value,
             draw_date: bool = Settings.DRAW_DATE.value,
             size: int = Settings.DEFAULT_RESOLUTION.value,
             hours: int = Settings.HOURS.value,
-            draw_sun: bool = True,
-            draw_moon: bool = True,
-            draw_moon_tex: bool = True,
-            draw_moon_phase: bool = True,
-            blur: bool = False,
-            mask_moon_shadow: bool = True,
+            draw_sun: bool = Settings.DRAW_SUN.value,
+            draw_moon: bool = Settings.DRAW_MOON.value,
+            draw_moon_tex: bool = Settings.DRAW_MOON_TEXT.value,
+            draw_moon_phase: bool = Settings.DRAW_MOON_PHASE.value,
+            blur: bool = Settings.BLUR.value,
+            mask_moon_shadow: bool = Settings.MASK_MOON_SHADOW.value,
             mask_square: bool = False,
     ) -> Image:
 
@@ -367,8 +362,6 @@ class MoonClock(object):
                     fill=white
                 )
 
-                # TODO:
-                # Blur is not precise yet
                 if blur:
                     blur_weight = 5
                     for i in range(75):
