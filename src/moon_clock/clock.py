@@ -6,8 +6,10 @@ import zoneinfo
 import logging
 import math
 import numpy as np
+import time
 
 from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 from timezonefinder import TimezoneFinder
 
 from PIL import ImageFile, Image, ImageDraw, ImageFont, ImageOps, ImageChops, ImageEnhance, ImageFilter
@@ -43,7 +45,18 @@ class MoonClock(object):
     @staticmethod
     def _get_coords(address) -> tuple[float, float]:
         geolocator = Nominatim(user_agent="moon-clock")
-        location = geolocator.geocode(address)
+        max_tries = 5
+        tries = 0
+        while True:
+            try:
+                location = geolocator.geocode(address)
+                break
+            except GeocoderTimedOut as e:
+                tries += 1
+                time.sleep(1)
+                if tries >= max_tries:
+                    raise MoonClockException(f"Giving up - tried {max_tries} times.") from e
+
         LOG.info(f"Writing Clock PNG for location: {location.address}")
         return location.latitude, location.longitude
 
@@ -53,7 +66,8 @@ class MoonClock(object):
             address: str,
             iso: None,
             draw_text: str = Settings.DEFAULT_TEXT.value,
-            draw_date: bool = True,
+            draw_tz: bool = Settings.DRAW_TZ.value,
+            draw_date: bool = Settings.DRAW_DATE.value,
             size: int = Settings.DEFAULT_RESOLUTION.value,
             hours: int = Settings.HOURS.value,
             draw_sun: bool = True,
@@ -264,23 +278,39 @@ class MoonClock(object):
             _logo_inv = ImageOps.invert(_clock.convert('RGB'))
             _clock.paste(_logo_inv, mask=logo_img)
 
+        if draw_tz:
+            tz_img = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
+            tz_draw = ImageDraw.Draw(tz_img)
+            font_tz = ImageFont.truetype(Settings.CALLIGRAPHIC.value, round(_size * 0.050))
+            text_tz = now.strftime(tz)
+            length_tz = font_tz.getlength(text_tz)
+            tz_draw.text(
+                (
+                    round(_size / 2) - length_tz / 2,
+                    round(_size * 0.3)
+                ),
+                text_tz,
+                fill=white,
+                font=font_tz
+            )
+
+            _date_inv = ImageOps.invert(_clock.convert('RGB'))
+            _clock.paste(_date_inv, mask=tz_img)
+
         if draw_date:
             date_img = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
-            date_draw = ImageDraw.Draw(date_img)
-            font_date = ImageFont.truetype(Settings.CALLIGRAPHIC.value, round(_size * 0.120))
-            # font_date = ImageFont.truetype(ARIAL, round(_size * 0.035))
-            # text_date = datetime.datetime.now().strftime('%A, %B %d %Y')
-            # text_date = datetime.datetime.now().strftime('%x')
-            text_date = now.strftime(Settings.DATE_FORMAT.value)
-            length_date = font_date.getlength(text_date)
-            date_draw.text(
+            tz_draw = ImageDraw.Draw(date_img)
+            font_tz = ImageFont.truetype(Settings.CALLIGRAPHIC.value, round(_size * 0.120))
+            text_tz = now.strftime(Settings.DATE_FORMAT.value)
+            length_tz = font_tz.getlength(text_tz)
+            tz_draw.text(
                 (
-                    round(_size / 2) - length_date / 2,
+                    round(_size / 2) - length_tz / 2,
                     round(_size * 0.315)
                 ),
-                text_date,
+                text_tz,
                 fill=white,
-                font=font_date
+                font=font_tz
             )
 
             _date_inv = ImageOps.invert(_clock.convert('RGB'))

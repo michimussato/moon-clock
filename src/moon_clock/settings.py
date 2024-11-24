@@ -20,6 +20,8 @@ class Settings(enum.Enum):
     CALLIGRAPHIC = pathlib.Path(RESOURCES / "ttf" / "calligraphia-one.ttf")
     CLOCK_UPDATE_INTERVAL = 15  # in minutes
     MOON_TEXTURE = pathlib.Path(RESOURCES / "img" / "moon_texture_small.png")
+    DRAW_TZ = True
+    DRAW_DATE = True
 
     HOURS_ = [12, 24]
     HOURS = HOURS_[1]
