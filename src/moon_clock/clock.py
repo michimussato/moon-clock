@@ -84,9 +84,11 @@ class MoonClock(object):
         else:
             now = datetime.datetime.fromisoformat(iso)
 
-        print(now)
+        LOG.info(f"{now = }")
 
+        LOG.info(f"{size = }")
         _size = size * Settings.ANTIALIAS.value
+        LOG.info(f"{_size = }")
 
         if hours not in Settings.HOURS_.value:
             raise MoonClockException('hours can only be 12 or 24')
