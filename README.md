@@ -2,6 +2,7 @@
 * [moon-clock](#moon-clock)
   * [Installation](#installation)
   * [Usage](#usage)
+    * [API](#api)
     * [CLI](#cli)
   * [Examples](#examples)
 <!-- TOC -->
@@ -26,6 +27,20 @@ pip install git+https://github.com/michimussato/moon-clock.git
 ```
 
 ## Usage
+
+### API
+
+```python
+from moon_clock import MoonClock
+from PIL import Image
+
+
+mc: Image = MoonClock().get_clock(
+    address="Sydney",
+    size=640,
+)
+mc.save("my-moon-clock.png")
+```
 
 ### CLI
 

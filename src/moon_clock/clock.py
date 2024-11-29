@@ -59,7 +59,7 @@ class MoonClock(object):
     @staticmethod
     def get_clock(
             address: str,
-            iso: [None, str],
+            iso: [None, str] = None,
             draw_text: str = Settings.DEFAULT_TEXT.value,
             draw_tz: bool = Settings.DRAW_TZ.value,
             draw_date: bool = Settings.DRAW_DATE.value,
