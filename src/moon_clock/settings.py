@@ -40,3 +40,4 @@ class Settings(enum.Enum):
     DEFAULT_TEXT = 'MoonClock'
     DATE_FORMAT = ['%-d.%-m.%Y'][0]
     DEFAULT_RESOLUTION = 448
+    DEFAULT_SCALE = 1.0
