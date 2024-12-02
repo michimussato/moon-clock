@@ -74,13 +74,19 @@ class MoonClock(object):
             mask_square: bool = False,  # Todo: True is probably better
     ) -> Image:
 
-        LAT, LONG = MoonClock._get_coords(address=address)
+        try:
+            LAT, LONG = MoonClock._get_coords(address=address)
 
-        tz = TimezoneFinder().timezone_at(lng=LONG, lat=LAT)
-        LOG.info(f"Timezone: {tz}")
+            tf = TimezoneFinder().timezone_at(lng=LONG, lat=LAT)
+            LOG.info(f"Timezone: {tf}")
+            tz = zoneinfo.ZoneInfo(key=tf)
+        except MoonClockException as e:
+            LOG.exception(e)
+            LOG.warning("Using default timezone.")
+            tz = None
 
         if iso is None:
-            now = datetime.datetime.now(tz=zoneinfo.ZoneInfo(key=tz))
+            now = datetime.datetime.now(tz=tz)
         else:
             now = datetime.datetime.fromisoformat(iso)
 
