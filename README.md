@@ -47,11 +47,15 @@ mc.save("my-moon-clock.png")
 ```
 $ moon-clock --help
 usage: moon-clock [-h] [-v] [-vv] [-a ADDRESS] [-f OUT_FILE] [-i ISO]
+                  [--moon-shadow-opacity MOON_SHADOW_OPACITY]
 
 options:
   -h, --help            show this help message and exit
   -v, --verbose         set loglevel to INFO
   -vv, --very-verbose   set loglevel to DEBUG
+  --moon-shadow-opacity MOON_SHADOW_OPACITY, -s MOON_SHADOW_OPACITY
+                        Black dial background or transparent. (0<=moon-
+                        shadow<=255).
 
 save:
   -a ADDRESS, --address ADDRESS
