@@ -70,6 +70,7 @@ class MoonClock(object):
             draw_moon_tex: bool = Settings.DRAW_MOON_TEXT.value,
             draw_moon_phase: bool = Settings.DRAW_MOON_PHASE.value,
             blur: bool = Settings.BLUR.value,
+            dial_shadow_opacity: int = 255,
             mask_moon_shadow: bool = Settings.MASK_MOON_SHADOW.value,
             mask_square: bool = False,  # Todo: True is probably better
     ) -> Image:
@@ -128,7 +129,7 @@ class MoonClock(object):
                     _size-edge_compensation - _edge_comp_2,
                     _size-edge_compensation - _edge_comp_2
                 ),
-                fill=(0, 0, 0, 255)
+                fill=(0, 0, 0, dial_shadow_opacity)
             )
 
         _clock = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
@@ -140,6 +141,7 @@ class MoonClock(object):
         else:
             arc_twelve = 270.0
 
+        # dial fg
         white = (255, 255, 255, 255)
 
         # center dot
@@ -285,7 +287,7 @@ class MoonClock(object):
             tz_img = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
             tz_draw = ImageDraw.Draw(tz_img)
             font_tz = ImageFont.truetype(Settings.CALLIGRAPHIC.value, round(_size * 0.050))
-            text_tz = now.strftime(tz)
+            text_tz = now.strftime(Settings.DATE_FORMAT.value)
             length_tz = font_tz.getlength(text_tz)
             tz_draw.text(
                 (
@@ -647,6 +649,17 @@ def parse_args(args):
         required=False,
     )
 
+    parser.add_argument(
+        "--moon-shadow-opacity",
+        "-s",
+        dest="moon_shadow_opacity",
+        default=127,
+        type=int,
+        required=False,
+        help="Black dial background or transparent. "
+             "(0<=moon-shadow<=255).",
+    )
+
     return parser.parse_args(args)
 
 
@@ -667,7 +680,11 @@ def main(args):
     setup_logging(args.loglevel)
 
     if args.out_file.resolve().parent.exists():
-        moon_clock.MoonClock().get_clock(address=args.address, iso=args.iso).save(args.out_file)
+        moon_clock.MoonClock().get_clock(
+            address=args.address,
+            iso=args.iso,
+            dial_shadow_opacity=args.moon_shadow_opacity,
+        ).save(args.out_file)
 
     else:
         LOG.error(f"Destination directory does not exist: {args.out_file.parent.as_posix()}")
