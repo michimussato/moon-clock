@@ -1,12 +1,11 @@
 import logging
 import pathlib
-from pathlib import Path
 import enum
 
 
 class Settings(enum.Enum):
-    BASE_DIR = Path(__file__).resolve().parent
-    RESOURCES = pathlib.Path(BASE_DIR / "data")
+    BASE_DIR = pathlib.Path(__file__).resolve().parent
+    RESOURCES = BASE_DIR / "data"
 
     GLOBAL_LOGGING_LEVEL = logging.DEBUG
 
@@ -16,27 +15,15 @@ class Settings(enum.Enum):
 
     # CLOCK
     ANTIALIAS = 4  # Warning: expensive calculation
-    ARIAL = pathlib.Path(RESOURCES / "ttf" / "arial.ttf")
-    CALLIGRAPHIC = pathlib.Path(RESOURCES / "ttf" / "calligraphia-one.ttf")
+    ARIAL = RESOURCES / "ttf" / "arial.ttf"
+    CALLIGRAPHIC = RESOURCES / "ttf" / "calligraphia-one.ttf"
     CLOCK_UPDATE_INTERVAL = 15  # in minutes
-    MOON_TEXTURE = pathlib.Path(RESOURCES / "img" / "moon_texture_small.png")
-    DRAW_TZ = True
-    DRAW_DATE = True
-    BLUR = False  # Todo: blur is not precise yet
-    DRAW_SUN = True
-    DRAW_MOON = True
-    DRAW_MOON_TEXT = True
-    DRAW_MOON_PHASE = True
-    MASK_MOON_SHADOW = True
-
-    HOURS_ = [12, 24]
-    HOURS = HOURS_[1]
+    MOON_TEXTURE = RESOURCES / "img" / "moon_texture_small.png"
+    HOURS = [12, 24]
 
     # MOON TEXTURE
     CONTRAST = 1
     BRIGHTNESS = 1.2
 
     # TEXT
-    DEFAULT_TEXT = 'MoonClock'
     DATE_FORMAT = ['%-d.%-m.%Y'][0]
-    DEFAULT_RESOLUTION = 448

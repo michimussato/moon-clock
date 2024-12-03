@@ -60,25 +60,25 @@ class MoonClock(object):
     def get_clock(
             address: str,
             iso: [None, str] = None,
-            draw_text: str = Settings.DEFAULT_TEXT.value,
-            draw_tz: bool = Settings.DRAW_TZ.value,
-            draw_date: bool = Settings.DRAW_DATE.value,
-            size: int = Settings.DEFAULT_RESOLUTION.value,
-            hours: int = Settings.HOURS.value,
-            draw_sun: bool = Settings.DRAW_SUN.value,
-            draw_moon: bool = Settings.DRAW_MOON.value,
-            draw_moon_tex: bool = Settings.DRAW_MOON_TEXT.value,
-            draw_moon_phase: bool = Settings.DRAW_MOON_PHASE.value,
-            blur: bool = Settings.BLUR.value,
+            draw_text: str = "MoonClock",
+            draw_tz: bool = True,
+            draw_date: bool = True,
+            size: int = 448,
+            hours: int = Settings.HOURS.value[1],
+            draw_sun: bool = True,
+            draw_moon: bool = True,
+            draw_moon_tex: bool = True,
+            draw_moon_phase: bool = True,
+            blur: bool = False,
             dial_shadow_opacity: int = 255,
-            mask_moon_shadow: bool = Settings.MASK_MOON_SHADOW.value,
+            mask_moon_shadow: bool = True,
             mask_square: bool = False,  # Todo: True is probably better
     ) -> Image:
 
         try:
-            LAT, LONG = MoonClock._get_coords(address=address)
+            lat, long = MoonClock._get_coords(address=address)
 
-            tf = TimezoneFinder().timezone_at(lng=LONG, lat=LAT)
+            tf = TimezoneFinder().timezone_at(lng=long, lat=lat)
             LOG.info(f"Timezone: {tf}")
             tz = zoneinfo.ZoneInfo(key=tf)
         except MoonClockException as e:
@@ -97,7 +97,7 @@ class MoonClock(object):
         _size = size * Settings.ANTIALIAS.value
         LOG.info(f"{_size = } (for Antialiasing)")
 
-        if hours not in Settings.HOURS_.value:
+        if hours not in Settings.HOURS.value:
             raise MoonClockException('hours can only be 12 or 24')
 
         bg = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
@@ -447,7 +447,7 @@ class MoonClock(object):
 
         if draw_sun:
             _draw_sun = ImageDraw.Draw(comp)
-            _sun = suncalc.getTimes(now, LAT, LONG)
+            _sun = suncalc.getTimes(now, lat, long)
 
             decimal_sunrise = float(_sun['sunrise'].strftime('%H')) + float(_sun['sunrise'].strftime('%M')) / 60
             arc_length_sunrise = decimal_sunrise / hours * 360.0
@@ -486,18 +486,18 @@ class MoonClock(object):
 
             _moon_yesterday = suncalc.getMoonTimes(
                 now - datetime.timedelta(hours=24),
-                LAT,
-                LONG
+                lat,
+                long
             )
             _moon_today = suncalc.getMoonTimes(
                 now,
-                LAT,
-                LONG
+                lat,
+                long
             )
             _moon_tomorrow = suncalc.getMoonTimes(
                 now + datetime.timedelta(hours=24),
-                LAT,
-                LONG
+                lat,
+                long
             )
 
             LOG.debug(f'Moon Yesterday: {_moon_yesterday}')
