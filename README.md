@@ -69,14 +69,17 @@ save:
 moon-clock --address "Sydney" --out-file clock.png
 ```
 
-A series of hourly images from 1.5.2019-31.5.2019
+Todo: not all months have 31 days
+A series of hourly images from 1.1.2019-31.12.2019
 
 ```shell
-for d in $(seq -f "%02g" 1 31); do
-   for h in $(seq -f "%02g" 0 23); do
-       moon-clock -v -a "Sydney" -f clock_${d}_${h}.png -i "2019-01-${d}T${h}:00:00+02:00";
-   done;
-done
+for m in $(seq -f "%02g" 1 12); do
+    for d in $(seq -f "%02g" 1 31); do
+       for h in $(seq -f "%02g" 0 23); do
+           moon-clock -v -a "Sydney" -f clock_${m}_${d}_${h}.png -i "2019-${m}-${d}T${h}:00:00+02:00";
+       done;
+    done;
+done;
 ```
 
 ## Examples

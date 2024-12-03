@@ -287,7 +287,12 @@ class MoonClock(object):
             tz_img = Image.new(mode='RGBA', size=(_size, _size), color=(0, 0, 0, 0))
             tz_draw = ImageDraw.Draw(tz_img)
             font_tz = ImageFont.truetype(Settings.CALLIGRAPHIC.value, round(_size * 0.050))
-            text_tz = now.strftime(Settings.DATE_FORMAT.value)
+            strs = [
+                f"{tz.key} ({tz.tzname(now)})",
+                tz.key,  # "Australia/Sydney"
+                tz.tzname(now),  # "AEDT"
+            ]
+            text_tz = strs[1]
             length_tz = font_tz.getlength(text_tz)
             tz_draw.text(
                 (
